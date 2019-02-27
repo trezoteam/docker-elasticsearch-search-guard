@@ -30,13 +30,10 @@ function setup_tls_config(){
     node_csr="node.csr"
     node_key="node.key"
 
-    # Create a certificate authority
     echo "Creating CA certificate and key"
     openssl genrsa -out "$tls_dir/$ca_key" 4096
     openssl req -x509 -new -nodes -key "$tls_dir/$ca_key" -subj "/O=Elasticsearch with Search Guard/OU=Container/CN=Elasticsearch with Search Guard" -sha256 -days 1024 -out "$tls_dir/$ca_crt"
     
-    # Generate a node certificate and private key
-    # openssl genrsa -out "$tls_dir/$node_key" 2048
     echo "Creating Admin certificate and key"
     openssl genpkey -out "$tls_dir/$admin_key" -algorithm RSA -pkeyopt rsa_keygen_bits:2048
     openssl req -new -sha256 -key "$tls_dir/$admin_key" -subj "/C=de/L=test/O=client/OU=client/CN=kirk" -out "$tls_dir/$node_csr"
