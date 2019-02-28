@@ -10,7 +10,7 @@ git clone https://github.com/trezoteam/docker-elasticsearch-search-guard.git
 cd docker-elasticsearch-search-guard
 build .
 ```
-Or run the image available no Docker Hub directly:
+Or run the image available on Docker Hub directly:
 ```
 docker run trezoinfra/elasticsearch-search-guard
 ```
