@@ -7,6 +7,17 @@ SG_TLS_CONFIG=("searchguard.ssl.transport.pemcert_filepath" \
                               "searchguard.authcz.admin_dn" 
 )
 
+# Default certificates and keys
+tls_dir="tls"
+ca_crt="$tls_dir/ca.crt"
+ca_key="$tls_dir/ca.key"
+admin_crt="$tls_dir/admin-node.crt"
+admin_csr="$tls_dir/admin-node.csr"
+admin_key="$tls_dir/admin-node.key"
+node_crt="$tls_dir/node.crt"
+node_csr="$tls_dir/node.csr"
+node_key="$tls_dir/node.key"
+
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/configuring-tls.html
 # Not using bin/elasticsearch-certutil, because it generates PKCS#12
 # And Search Guard expects PKCS#8 as described here:
@@ -18,35 +29,29 @@ function setup_tls_config(){
         sed -i "/${sg_tls_config}/d" config/elasticsearch.yml
     done
 
-    tls_dir="config"
+    # TLS file path is relative to config directory for Search Guard
+    pushd config 
     mkdir -p "$tls_dir"
 
-    ca_crt="ca.crt"
-    ca_key="ca.key"
-    admin_crt="admin-node.crt"
-    admin_csr="admin-node.csr"
-    admin_key="admin-node.key"
-    node_crt="node.crt"
-    node_csr="node.csr"
-    node_key="node.key"
-
     echo "Creating CA certificate and key"
-    openssl genrsa -out "$tls_dir/$ca_key" 4096
-    openssl req -x509 -new -nodes -key "$tls_dir/$ca_key" -subj "/O=Elasticsearch with Search Guard/OU=Container/CN=Elasticsearch with Search Guard" -sha256 -days 1024 -out "$tls_dir/$ca_crt"
+    openssl genrsa -out "$ca_key" 4096
+    openssl req -x509 -new -nodes -key "$ca_key" -subj "/O=Elasticsearch with Search Guard/OU=Container/CN=Elasticsearch with Search Guard" -sha256 -days 1024 -out "$ca_crt"
     
     echo "Creating Admin certificate and key"
-    openssl genpkey -out "$tls_dir/$admin_key" -algorithm RSA -pkeyopt rsa_keygen_bits:2048
-    openssl req -new -sha256 -key "$tls_dir/$admin_key" -subj "/C=de/L=test/O=client/OU=client/CN=kirk" -out "$tls_dir/$node_csr"
-    openssl x509 -req -in "$tls_dir/$node_csr" -CA "$tls_dir/$ca_crt" -CAkey "$tls_dir/$ca_key" -CAcreateserial -out "$tls_dir/$admin_crt" -days 1024 -sha256
+    openssl genpkey -out "$admin_key" -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+    openssl req -new -sha256 -key "$admin_key" -subj "/C=de/L=test/O=client/OU=client/CN=kirk" -out "$node_csr"
+    openssl x509 -req -in "$node_csr" -CA "$ca_crt" -CAkey "$ca_key" -CAcreateserial -out "$admin_crt" -days 1024 -sha256
 
     echo "Creating regular node certificate and key"
-    openssl genpkey -out "$tls_dir/$node_key" -algorithm RSA -pkeyopt rsa_keygen_bits:2048
-    openssl req -new -sha256 -key "$tls_dir/$node_key" -subj "/C=de/L=test/O=client/OU=client/CN=lars" -out "$tls_dir/$node_csr"
-    openssl x509 -req -in "$tls_dir/$node_csr" -CA "$tls_dir/$ca_crt" -CAkey "$tls_dir/$ca_key" -CAcreateserial -out "$tls_dir/$node_crt" -days 1024 -sha256
+    openssl genpkey -out "$node_key" -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+    openssl req -new -sha256 -key "$node_key" -subj "/C=de/L=test/O=client/OU=client/CN=lars" -out "$node_csr"
+    openssl x509 -req -in "$node_csr" -CA "$ca_crt" -CAkey "$ca_key" -CAcreateserial -out "$node_crt" -days 1024 -sha256
 
     chmod 770 "$tls_dir"
     find "$tls_dir" -type f -exec chmod 660 {} \;
     chown elasticsearch "$tls_dir" -R
+
+    popd
 
     echo "
 # AUTO GENERATED TLS SETTINGS #
@@ -72,7 +77,7 @@ function configure_search_guard(){
     done
     sleep 1
     echo "Starting sgadmin"
-    sgadmin.sh -cd plugins/search-guard-6/sgconfig/ -icl -nhnv -cacert config/ca.crt -cert config/admin-node.crt -key config/admin-node.key
+    sgadmin.sh -cd plugins/search-guard-6/sgconfig/ -icl -nhnv -cacert "config/${ca_crt}" -cert "config/${admin_crt}" -key "config/${admin_key}"
 }
 
 #https://docs.search-guard.com/latest/search-guard-installation#adding-the-tls-configuration
