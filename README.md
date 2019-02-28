@@ -50,6 +50,10 @@ Search Guard makes it mandatory to use TLS certificate and keys for node communi
 
 We recommend a volume mount for both the **/usr/share/elasticsearch/config/elasticsearch.yml** file as well as one for the directory containing TLS files the entrypoint outputs, which is **/usr/share/elasticsearch/config/tls** so that you don't lose the files nor the configuration related to TLS.
 
+
+### Configuration
+For additional Search Guard configuration (such as internal user database, roles, users and password), please refer to the [official documentation](https://docs.search-guard.com/latest/internal-users-database).
+
 ## Contributing
 This repository was created due to an internal company need. We may not look at Pull Requests frequently, but please feel free to report issues and propose code changes.
 
