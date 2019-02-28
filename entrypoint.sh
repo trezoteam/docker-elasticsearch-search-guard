@@ -77,6 +77,7 @@ function configure_search_guard(){
     done
     sleep 1
     echo "Starting sgadmin"
+    echo "alias rebuild-sg-index='sgadmin.sh -cd plugins/search-guard-6/sgconfig/ -icl -nhnv -cacert config/${ca_crt} -cert config/${admin_crt} -key config/${admin_key}'" >> ~/.bashrc
     sgadmin.sh -cd plugins/search-guard-6/sgconfig/ -icl -nhnv -cacert "config/${ca_crt}" -cert "config/${admin_crt}" -key "config/${admin_key}"
 }
 
