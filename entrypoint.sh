@@ -1,5 +1,5 @@
 #!/bin/bash
-
+. /etc/bashrc
 SG_TLS_CONFIG=("searchguard.ssl.transport.pemcert_filepath" \
                               "searchguard.ssl.transport.pemkey_filepath" \
                               "searchguard.ssl.transport.pemtrustedcas_filepath" \
