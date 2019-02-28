@@ -66,7 +66,7 @@ searchguard.authcz.admin_dn:
 
 searchguard.nodes_dn:
   - CN=lars,OU=client,O=client,L=test,C=de
-" >> config/elasticsearch.yml
+" >> /usr/share/elasticsearch/config/elasticsearch.yml
 
     yum remove openssl -y > /dev/null
 }
